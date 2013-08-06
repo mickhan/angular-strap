@@ -1,6 +1,6 @@
 /**
  * AngularStrap - Twitter Bootstrap directives for AngularJS
- * @version v0.7.5 - 2013-07-31
+ * @version v0.7.5 - 2013-07-21
  * @link http://mgcrea.github.com/angular-strap
  * @author Olivier Louvignes <olivier@mg-crea.com>
  * @license MIT License, http://www.opensource.org/licenses/MIT
@@ -248,7 +248,7 @@ angular.module('$strap.directives').directive('bsDatepicker', [
   '$strapConfig',
   function ($timeout, $strapConfig) {
     var isAppleTouch = /(iP(a|o)d|iPhone)/g.test(navigator.userAgent);
-    var regexpMap = function regexpMapFn(language) {
+    var regexpMap = function regexpMap(language) {
       language = language || 'en';
       return {
         '/': '[\\/]',
@@ -259,15 +259,15 @@ angular.module('$strap.directives').directive('bsDatepicker', [
         'd': '(?:(?:[0-2]?[0-9]{1})|(?:[3][01]{1}))',
         'mm': '(?:[0]?[1-9]|[1][012])',
         'm': '(?:[0]?[1-9]|[1][012])',
-        'DD': '(?:' + $.fn.datepicker.dates[language].days.join('|') + ')',
-        'D': '(?:' + $.fn.datepicker.dates[language].daysShort.join('|') + ')',
-        'MM': '(?:' + $.fn.datepicker.dates[language].months.join('|') + ')',
-        'M': '(?:' + $.fn.datepicker.dates[language].monthsShort.join('|') + ')',
+        'DD': '(?:' + $.fn.datetimepicker.dates[language].days.join('|') + ')',
+        'D': '(?:' + $.fn.datetimepicker.dates[language].daysShort.join('|') + ')',
+        'MM': '(?:' + $.fn.datetimepicker.dates[language].months.join('|') + ')',
+        'M': '(?:' + $.fn.datetimepicker.dates[language].monthsShort.join('|') + ')',
         'yyyy': '(?:(?:[1]{1}[0-9]{1}[0-9]{1}[0-9]{1})|(?:[2]{1}[0-9]{3}))(?![[0-9]])',
         'yy': '(?:(?:[0-9]{1}[0-9]{1}))(?![[0-9]])'
       };
     };
-    var regexpForDateFormat = function regexpForDateFormatFn(format, language) {
+    var regexpForDateFormat = function regexpForDateFormat(format, language) {
       var re = format, map = regexpMap(language), i;
       i = 0;
       angular.forEach(map, function (v, k) {
@@ -295,7 +295,7 @@ angular.module('$strap.directives').directive('bsDatepicker', [
           'daysOfWeekDisabled',
           'autoclose',
           'startView',
-          'minViewMode',
+          'minView',
           'todayBtn',
           'todayHighlight',
           'keyboardNavigation',
@@ -305,10 +305,10 @@ angular.module('$strap.directives').directive('bsDatepicker', [
           if (angular.isDefined(attrs[key]))
             options[key] = attrs[key];
         });
-        var language = options.language || 'en', readFormat = attrs.dateFormat || options.format || $.fn.datepicker.dates[language] && $.fn.datepicker.dates[language].format || 'mm/dd/yyyy', format = isAppleTouch ? 'yyyy-mm-dd' : readFormat, dateFormatRegexp = regexpForDateFormat(format, language);
+        var language = options.language || 'en', readFormat = attrs.dateFormat || options.format || $.fn.datetimepicker.dates[language] && $.fn.datetimepicker.dates[language].format || 'mm/dd/yyyy', format = isAppleTouch ? 'yyyy-mm-dd' : readFormat, dateFormatRegexp = regexpForDateFormat(format, language);
         if (controller) {
           controller.$formatters.unshift(function (modelValue) {
-            return type === 'date' && angular.isString(modelValue) && modelValue ? $.fn.datepicker.DPGlobal.parseDate(modelValue, $.fn.datepicker.DPGlobal.parseFormat(readFormat), language) : modelValue;
+            return type === 'date' && angular.isString(modelValue) && modelValue ? $.fn.datetimepicker.DPGlobal.parseDate(modelValue, $.fn.datetimepicker.DPGlobal.parseFormat(readFormat), language) : modelValue;
           });
           controller.$parsers.unshift(function (viewValue) {
             if (!viewValue) {
@@ -321,7 +321,7 @@ angular.module('$strap.directives').directive('bsDatepicker', [
               controller.$setValidity('date', true);
               if (isAppleTouch)
                 return new Date(viewValue);
-              return type === 'string' ? viewValue : $.fn.datepicker.DPGlobal.parseDate(viewValue, $.fn.datepicker.DPGlobal.parseFormat(format), language);
+              return type === 'string' ? viewValue : $.fn.datetimepicker.DPGlobal.parseDate(viewValue, $.fn.datetimepicker.DPGlobal.parseFormat(format), language);
             } else {
               controller.$setValidity('date', false);
               return undefined;
@@ -329,13 +329,13 @@ angular.module('$strap.directives').directive('bsDatepicker', [
           });
           controller.$render = function ngModelRender() {
             if (isAppleTouch) {
-              var date = controller.$viewValue ? $.fn.datepicker.DPGlobal.formatDate(controller.$viewValue, $.fn.datepicker.DPGlobal.parseFormat(format), language) : '';
+              var date = controller.$viewValue ? $.fn.datetimepicker.DPGlobal.formatDate(controller.$viewValue, $.fn.datetimepicker.DPGlobal.parseFormat(format), language) : '';
               element.val(date);
               return date;
             }
             if (!controller.$viewValue)
               element.val('');
-            return element.datepicker('update', controller.$viewValue);
+            return element.datetimepicker('update', controller.$viewValue);
           };
         }
         if (isAppleTouch) {
@@ -348,22 +348,22 @@ angular.module('$strap.directives').directive('bsDatepicker', [
               });
             });
           }
-          element.datepicker(angular.extend(options, {
+          element.datetimepicker(angular.extend(options, {
             format: format,
             language: language
           }));
           scope.$on('$destroy', function () {
             var datepicker = element.data('datepicker');
             if (datepicker) {
-              datepicker.picker.remove();
+              datetimepicker.picker.remove();
               element.data('datepicker', null);
             }
           });
           attrs.$observe('startDate', function (value) {
-            element.datepicker('setStartDate', value);
+            element.datetimepicker('setStartDate', value);
           });
           attrs.$observe('endDate', function (value) {
-            element.datepicker('setEndDate', value);
+            element.datetimepicker('setEndDate', value);
           });
         }
         var component = element.siblings('[data-toggle="datepicker"]');
@@ -428,7 +428,7 @@ angular.module('$strap.directives').factory('$modal', [
   '$templateCache',
   '$strapConfig',
   function ($rootScope, $compile, $http, $timeout, $q, $templateCache, $strapConfig) {
-    var ModalFactory = function ModalFactoryFn(config) {
+    var ModalFactory = function ModalFactory(config) {
       function Modal(config) {
         var options = angular.extend({ show: true }, $strapConfig.modal, config), scope = options.scope ? options.scope : $rootScope.$new(), templateUrl = options.template;
         return $q.when($templateCache.get(templateUrl) || $http.get(templateUrl, { cache: true }).then(function (res) {
